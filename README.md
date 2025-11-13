@@ -7,9 +7,10 @@
 
 ### 기술 스택
 
- - Kotlin, Java 21  
+ - Java 21
+ - Kotlin 1.9
  - Spring Boot 3.5.7  
- - SQLite
+ - SQLite 3.51
 
 ---
 
