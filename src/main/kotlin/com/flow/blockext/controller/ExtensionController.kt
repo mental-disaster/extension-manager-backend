@@ -1,5 +1,7 @@
 package com.flow.blockext.controller
 
+import com.flow.blockext.model.dto.ExtensionResponseDto
+import com.flow.blockext.model.dto.toDto
 import com.flow.blockext.model.entity.Extension
 import com.flow.blockext.service.ExtensionService
 import org.springframework.web.bind.annotation.GetMapping
@@ -13,7 +15,8 @@ class ExtensionController(
 ) {
 
     @GetMapping("")
-    fun findAll(): List<Extension> {
+    fun findAll(): List<ExtensionResponseDto> {
         return extensionService.findAll()
+            .map { it.toDto() }
     }
 }
