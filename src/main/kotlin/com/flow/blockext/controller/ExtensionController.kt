@@ -2,7 +2,6 @@ package com.flow.blockext.controller
 
 import com.flow.blockext.model.dto.ExtensionResponseDto
 import com.flow.blockext.model.dto.toDto
-import com.flow.blockext.model.entity.Extension
 import com.flow.blockext.service.ExtensionService
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
