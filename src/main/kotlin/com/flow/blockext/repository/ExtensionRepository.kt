@@ -1,5 +1,6 @@
 package com.flow.blockext.repository
 
+import com.flow.blockext.exception.ExtensionQueryException
 import com.flow.blockext.model.entity.Extension
 import com.flow.blockext.model.enums.ExtensionType
 import org.springframework.jdbc.core.JdbcTemplate
@@ -13,15 +14,19 @@ class ExtensionRepository (
     fun findAll(): List<Extension> {
         val sql = "SELECT * FROM extension".trimIndent()
 
-        return jdbcTemplate.query(sql) { rs, _ ->
-            Extension(
-                id = rs.getLong("id"),
-                name = rs.getString("name"),
-                type = ExtensionType.valueOf(rs.getString("type")),
-                isBlocked = rs.getBoolean("is_blocked"),
-                createdAt = rs.getString("created_at"),
-                updatedAt = rs.getString("updated_at")
-            )
+        return runCatching {
+            jdbcTemplate.query(sql) { rs, _ ->
+                Extension(
+                    id = rs.getLong("id"),
+                    name = rs.getString("name"),
+                    type = ExtensionType.valueOf(rs.getString("type")),
+                    isBlocked = rs.getBoolean("is_blocked"),
+                    createdAt = rs.getString("created_at"),
+                    updatedAt = rs.getString("updated_at")
+                )
+            }
+        }.getOrElse { throwable ->
+            throw ExtensionQueryException("확장자 목록 조회 중 오류가 발생했습니다.", throwable)
         }
     }
 }
