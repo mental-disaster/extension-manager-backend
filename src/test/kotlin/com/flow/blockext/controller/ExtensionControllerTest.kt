@@ -106,10 +106,25 @@ class ExtensionControllerTest {
     }
 
     @Test
-    fun `POST validation failure returns 400`() {
+    fun `POST name is null returns 400`() {
         val payload = mapOf(
             "type" to "CUSTOM",
             "isBlocked" to true,
+        )
+
+        mockMvc.perform(
+            post("/api/extensions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(payload)),
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.code", equalTo("INVALID_REQUEST")))
+    }
+
+    @Test
+    fun `POST name exceeds length returns 400`() {
+        val payload = mapOf(
+            "name" to "a".repeat(21),
         )
 
         mockMvc.perform(

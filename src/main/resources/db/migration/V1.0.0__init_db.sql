@@ -1,7 +1,7 @@
 -- 확장자 테이블
 CREATE TABLE IF NOT EXISTS extension (
-    id              INTEGER PRIMARY KEY AUTOINCREMENT ,
-    name            VARCHAR(20) NOT NULL UNIQUE , -- 확장자명(ex. sh, exe)
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    name            TEXT NOT NULL CHECK(length(name) <= 20), -- 확장자명(ex. sh, exe)
     type            TEXT NOT NULL CHECK(type IN ('FIXED', 'CUSTOM')) DEFAULT 'CUSTOM', -- 확장자 타입
     is_blocked      BOOLEAN NOT NULL DEFAULT TRUE, -- 차단 여부
     created_at      TEXT NOT NULL DEFAULT (datetime('now')), -- 생성 일자
