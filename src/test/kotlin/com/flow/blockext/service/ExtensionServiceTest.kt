@@ -1,14 +1,17 @@
 package com.flow.blockext.service
 
+import com.flow.blockext.exception.ExtensionDuplicateException
+import com.flow.blockext.exception.ExtensionQueryException
+import com.flow.blockext.model.dto.ExtensionCreateRequestDto
 import com.flow.blockext.model.entity.Extension
 import com.flow.blockext.model.enums.ExtensionType
 import com.flow.blockext.repository.ExtensionRepository
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.BDDMockito.given
 import org.mockito.Mockito
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyNoMoreInteractions
 
 class ExtensionServiceTest {
 
@@ -22,23 +25,42 @@ class ExtensionServiceTest {
     }
 
     @Test
-    fun `findAll delegates to repository and returns result`() {
-        val extensions = listOf(
-            Extension(
-                id = 1L,
-                name = "exe",
-                isBlocked = true,
-                type = ExtensionType.FIXED,
-                createdAt = "2024-01-01 00:00:00",
-                updatedAt = "2024-01-02 00:00:00",
-            ),
-        )
-        Mockito.`when`(repository.findAll()).thenReturn(extensions)
+    fun `create returns entity`() {
+        val request = ExtensionCreateRequestDto("exe")
+        val created = Extension(1L, "exe", true, ExtensionType.FIXED, "", "")
+        given(repository.insert("exe", ExtensionType.FIXED, true)).willReturn(1L)
+        given(repository.findById(1L)).willReturn(created)
 
-        val result = service.findAll()
+        val result = service.create(request)
 
-        assertThat(result).isEqualTo(extensions)
-        verify(repository).findAll()
-        verifyNoMoreInteractions(repository)
+        assertThat(result).isEqualTo(created)
+    }
+
+    @Test
+    fun `create throws when name blank`() {
+        val request = ExtensionCreateRequestDto("   ")
+
+        assertThatThrownBy { service.create(request) }
+            .isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("name")
+    }
+
+    @Test
+    fun `create propagates duplicate exception`() {
+        val request = ExtensionCreateRequestDto("exe")
+        given(repository.insert("exe", ExtensionType.FIXED, true)).willThrow(ExtensionDuplicateException("dup"))
+
+        assertThatThrownBy { service.create(request) }
+            .isInstanceOf(ExtensionDuplicateException::class.java)
+    }
+
+    @Test
+    fun `create propagates query exception from findById`() {
+        val request = ExtensionCreateRequestDto("exe")
+        given(repository.insert("exe", ExtensionType.FIXED, true)).willReturn(5L)
+        given(repository.findById(5L)).willThrow(ExtensionQueryException("조회 실패"))
+
+        assertThatThrownBy { service.create(request) }
+            .isInstanceOf(ExtensionQueryException::class.java)
     }
 }

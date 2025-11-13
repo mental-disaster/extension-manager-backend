@@ -3,6 +3,7 @@ package com.flow.blockext.exception
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 
@@ -16,6 +17,23 @@ class GlobalExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(ErrorResponse(code = "EXTENSION_QUERY_FAILED", message = ex.message ?: "확장자 조회 중 오류"))
+    }
+
+    @ExceptionHandler(ExtensionDuplicateException::class)
+    fun handleExtensionDuplicate(ex: ExtensionDuplicateException): ResponseEntity<ErrorResponse> {
+        log.warn("Duplicate extension", ex)
+        return ResponseEntity
+            .status(HttpStatus.CONFLICT)
+            .body(ErrorResponse(code = "EXTENSION_DUPLICATE", message = ex.message ?: "이미 등록된 확장자입니다."))
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun handleValidation(ex: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
+        log.warn("Validation failed on request parameter", ex)
+        val message = ex.bindingResult.fieldErrors.firstOrNull()?.defaultMessage ?: "잘못된 요청입니다."
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ErrorResponse(code = "INVALID_REQUEST", message = message))
     }
 
     @ExceptionHandler(IllegalArgumentException::class)
