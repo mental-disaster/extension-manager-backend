@@ -1,5 +1,6 @@
 package com.flow.blockext.controller
 
+import com.flow.blockext.model.dto.ExtensionBlockUpdateRequestDto
 import com.flow.blockext.model.dto.ExtensionCreateRequestDto
 import com.flow.blockext.model.dto.ExtensionResponseDto
 import com.flow.blockext.model.dto.toDto
@@ -23,6 +24,12 @@ class ExtensionController(
     fun create(
         @Valid @RequestBody request: ExtensionCreateRequestDto,
     ): ExtensionResponseDto = extensionService.create(request).toDto()
+
+    @PatchMapping("/{name}/block")
+    fun updateBlockStatus(
+        @PathVariable("name") name: String,
+        @RequestBody req: ExtensionBlockUpdateRequestDto,
+    ): ExtensionResponseDto = extensionService.updateBlockStatus(name, req.isBlocked).toDto()
 
     @DeleteMapping("/{name}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

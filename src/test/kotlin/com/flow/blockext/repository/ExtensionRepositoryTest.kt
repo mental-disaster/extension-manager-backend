@@ -1,7 +1,7 @@
 package com.flow.blockext.repository
 
-import com.flow.blockext.exception.ExtensionDuplicateException
-import com.flow.blockext.exception.ExtensionQueryException
+import com.flow.blockext.exception.extension.ExtensionDuplicateException
+import com.flow.blockext.exception.extension.ExtensionQueryException
 import com.flow.blockext.model.enums.ExtensionType
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -84,6 +84,17 @@ class ExtensionRepositoryTest {
     }
 
     @Test
+    fun `findByName returns entity`() {
+        repository.insert("bat", ExtensionType.CUSTOM, true)
+
+        val entity = repository.findByName("bat")
+
+        assertThat(entity.name).isEqualTo("bat")
+        assertThat(entity.type).isEqualTo(ExtensionType.CUSTOM)
+        assertThat(entity.isBlocked).isTrue()
+    }
+
+    @Test
     fun `insert returns generated id`() {
         val id = repository.insert("bat", ExtensionType.CUSTOM, true)
 
@@ -100,6 +111,24 @@ class ExtensionRepositoryTest {
     fun `insert throws duplicate exception`() {
         assertThatThrownBy { repository.insert("exe", ExtensionType.FIXED, true) }
             .isInstanceOf(ExtensionDuplicateException::class.java)
+    }
+
+    @Test
+    fun `updateIsBlockedByNameAndType update data and return updated count`() {
+        val updatedCount = repository.updateIsBlockedByNameAndType("exe", ExtensionType.FIXED, false)
+        val updatedData = repository.findByName("exe")
+
+        assertThat(updatedCount).isEqualTo(1)
+        assertThat(updatedData.isBlocked).isFalse()
+    }
+
+    @Test
+    fun `deleteByNameAndType delete data and return deleted count`() {
+        val deletedCount = repository.deleteByNameAndType("exe", ExtensionType.FIXED)
+
+        assertThat(deletedCount).isEqualTo(1)
+        assertThatThrownBy { repository.findByName("exe") }
+            .isInstanceOf(ExtensionQueryException::class.java)
     }
 
 

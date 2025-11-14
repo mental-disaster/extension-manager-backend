@@ -1,10 +1,11 @@
 package com.flow.blockext.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.flow.blockext.exception.ExtensionDuplicateException
-import com.flow.blockext.exception.ExtensionLimitExceededException
-import com.flow.blockext.exception.ExtensionQueryException
+import com.flow.blockext.exception.extension.ExtensionDuplicateException
+import com.flow.blockext.exception.extension.ExtensionLimitExceededException
+import com.flow.blockext.exception.extension.ExtensionQueryException
 import com.flow.blockext.exception.GlobalExceptionHandler
+import com.flow.blockext.model.dto.ExtensionBlockUpdateRequestDto
 import com.flow.blockext.model.dto.ExtensionCreateRequestDto
 import com.flow.blockext.model.entity.Extension
 import com.flow.blockext.model.enums.ExtensionType
@@ -19,8 +20,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
@@ -173,5 +173,40 @@ class ExtensionControllerTest {
             .andExpect(status().isConflict)
             .andExpect(jsonPath("$.code", equalTo("EXTENSION_LIMIT_EXCEEDED")))
             .andExpect(jsonPath("$.message", equalTo("한계 초과")))
+    }
+
+    @Test
+    fun `Patch _name_update return updated extension`() {
+        val name = "exe"
+        val request = ExtensionBlockUpdateRequestDto(isBlocked = true)
+        val updated = Extension(
+            id = 10L,
+            name = name,
+            isBlocked = true,
+            type = ExtensionType.FIXED,
+            createdAt = "2024-01-05 00:00:00",
+            updatedAt = "2024-01-05 00:00:00",
+        )
+
+        given(extensionService.updateBlockStatus(name, request.isBlocked)).willReturn(updated)
+
+        mockMvc.perform(
+            patch("/api/extensions/{name}/block", name)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updated))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.name", equalTo("exe")))
+            .andExpect(jsonPath("$.isBlocked", equalTo(true)))
+            .andExpect(jsonPath("$.type", equalTo("FIXED")))
+    }
+
+    @Test
+    fun `Delete _name return 204`() {
+        Mockito.doNothing()
+            .`when`(extensionService).deleteCustomByName("exe")
+
+        mockMvc.perform(delete("/api/extensions/{name}", "exe"))
+            .andExpect(status().isNoContent)
     }
 }

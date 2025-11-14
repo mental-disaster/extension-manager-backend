@@ -1,4 +1,4 @@
-package com.flow.blockext.exception
+package com.flow.blockext.exception.extension
 
 class ExtensionQueryException(
     message: String,

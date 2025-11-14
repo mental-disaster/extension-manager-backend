@@ -1,8 +1,8 @@
 package com.flow.blockext.service
 
-import com.flow.blockext.exception.ExtensionDuplicateException
-import com.flow.blockext.exception.ExtensionLimitExceededException
-import com.flow.blockext.exception.ExtensionQueryException
+import com.flow.blockext.exception.extension.ExtensionDuplicateException
+import com.flow.blockext.exception.extension.ExtensionLimitExceededException
+import com.flow.blockext.exception.extension.ExtensionQueryException
 import com.flow.blockext.model.dto.ExtensionCreateRequestDto
 import com.flow.blockext.model.entity.Extension
 import com.flow.blockext.model.enums.ExtensionType
@@ -99,5 +99,23 @@ class ExtensionServiceTest {
 
         assertThatThrownBy { service.create(request) }
             .isInstanceOf(ExtensionQueryException::class.java)
+    }
+
+    @Test
+    fun `updateBlockStatus returns entity`() {
+        val updated = Extension(
+            id = 10L,
+            name = "exe",
+            isBlocked = true,
+            type = ExtensionType.FIXED,
+            createdAt = "2024-01-05 00:00:00",
+            updatedAt = "2024-01-05 00:00:00",
+        )
+        given(repository.updateIsBlockedByNameAndType("exe", ExtensionType.FIXED, true)).willReturn(1)
+        given(repository.findByName("exe")).willReturn(updated)
+
+        val result = service.updateBlockStatus("exe", true)
+
+        assertThat(result).isEqualTo(updated)
     }
 }

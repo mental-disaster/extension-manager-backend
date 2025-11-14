@@ -1,6 +1,6 @@
-package com.flow.blockext.exception
+package com.flow.blockext.exception.extension
 
-class ExtensionLimitExceededException(
+class ExtensionDuplicateException(
     message: String,
     cause: Throwable? = null,
 ) : RuntimeException(message, cause)

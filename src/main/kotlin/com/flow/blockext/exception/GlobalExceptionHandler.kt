@@ -1,5 +1,8 @@
 package com.flow.blockext.exception
 
+import com.flow.blockext.exception.extension.ExtensionDuplicateException
+import com.flow.blockext.exception.extension.ExtensionLimitExceededException
+import com.flow.blockext.exception.extension.ExtensionQueryException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity

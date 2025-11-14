@@ -1,7 +1,7 @@
 package com.flow.blockext.repository
 
-import com.flow.blockext.exception.ExtensionDuplicateException
-import com.flow.blockext.exception.ExtensionQueryException
+import com.flow.blockext.exception.extension.ExtensionDuplicateException
+import com.flow.blockext.exception.extension.ExtensionQueryException
 import com.flow.blockext.model.entity.Extension
 import com.flow.blockext.model.enums.ExtensionType
 import org.springframework.dao.DataAccessException
@@ -43,10 +43,22 @@ class ExtensionRepository(
                 "SELECT * FROM extension WHERE id = ?",
                 extensionRowMapper,
                 id,
-            )
+            ) ?: throw ExtensionQueryException("ID=${id} 생성된 확장자 조회에 실패했습니다.")
         }.getOrElse { throwable ->
-            throw ExtensionQueryException("확장자를 조회하는 중 오류가 발생했습니다.", throwable)
-        } ?: throw ExtensionQueryException("ID=${id} 확장자를 찾을 수 없습니다.")
+            throw ExtensionQueryException("확장자를 id로 조회하는 중 오류가 발생했습니다.", throwable)
+        }
+    }
+
+    fun findByName(name: String): Extension {
+        return runCatching {
+            jdbcTemplate.queryForObject(
+                "SELECT * FROM extension WHERE name = ?",
+                extensionRowMapper,
+                name,
+            ) ?: throw ExtensionQueryException("name=${name} 수정된 확장자 조회에 실패했습니다.")
+        }.getOrElse { throwable ->
+            throw ExtensionQueryException("확장자를 이름으로 조회하는 중 오류가 발생했습니다.", throwable)
+        }
     }
 
     fun insert(name: String, type: ExtensionType, isBlocked: Boolean): Long {
@@ -68,10 +80,29 @@ class ExtensionRepository(
             val rootMsg = e.rootCause?.message ?: e.message ?: ""
 
             if (rootMsg.contains("UNIQUE constraint failed", ignoreCase = true)) {
-                throw ExtensionDuplicateException("이미 등록된 확장자입니다.", e)
+                throw ExtensionDuplicateException("이미 등록된 이름의 확장자입니다.", e)
             }
 
             throw ExtensionQueryException("확장자 생성 중 오류가 발생했습니다.", e)
+        }
+    }
+
+    fun updateIsBlockedByNameAndType(name: String, type: ExtensionType, isBlocked: Boolean): Int {
+        try {
+            val updated = jdbcTemplate.update(
+                "UPDATE extension SET is_blocked = ? WHERE name = ? AND type = ?",
+                isBlocked,
+                name,
+                type,
+            )
+
+            if (updated <= 0) {
+                throw ExtensionQueryException("ID=${name} 수정 대상이 존재하지 않습니다.")
+            }
+
+            return updated
+        } catch (e: DataAccessException) {
+            throw ExtensionQueryException("확장자 수정 중 오류가 발생했습니다.", e)
         }
     }
 
