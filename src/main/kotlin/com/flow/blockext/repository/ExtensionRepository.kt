@@ -50,26 +50,44 @@ class ExtensionRepository(
     }
 
     fun insert(name: String, type: ExtensionType, isBlocked: Boolean): Long {
-        val insertSql = """
-            INSERT INTO extension(name, type, is_blocked)
-            VALUES (?, ?, ?)
-        """.trimIndent()
-
         try {
-            jdbcTemplate.update(insertSql, name, type.name, isBlocked)
+            val inserted = jdbcTemplate.update(
+                "INSERT INTO extension(name, type, is_blocked) VALUES (?, ?, ?)",
+                name,
+                type,
+                isBlocked
+            )
+
+            if (inserted <= 0) {
+                throw ExtensionQueryException("생성된 확장자가 없습니다.")
+            }
 
             return jdbcTemplate.queryForObject("SELECT last_insert_rowid()", Long::class.java)
                 ?: throw ExtensionQueryException("생성된 확장자 ID를 조회할 수 없습니다.")
-        } catch (ex: DataAccessException) {
-            val rootMsg = ex.rootCause?.message ?: ex.message ?: ""
+        } catch (e: DataAccessException) {
+            val rootMsg = e.rootCause?.message ?: e.message ?: ""
 
             if (rootMsg.contains("UNIQUE constraint failed", ignoreCase = true)) {
-                throw ExtensionDuplicateException("이미 등록된 확장자입니다.", ex)
+                throw ExtensionDuplicateException("이미 등록된 확장자입니다.", e)
             }
 
-            throw ExtensionQueryException("확장자 생성 중 오류가 발생했습니다.", ex)
+            throw ExtensionQueryException("확장자 생성 중 오류가 발생했습니다.", e)
         }
     }
+
+    fun deleteByNameAndType(name: String, type: ExtensionType): Int {
+        return runCatching {
+            jdbcTemplate.update(
+                "DELETE FROM extension WHERE name = ? AND type = ?",
+                name,
+                type,
+            )
+        }.getOrElse { throwable ->
+            throw ExtensionQueryException("확장자를 삭제하는 중 오류가 발생했습니다.", throwable)
+        }
+    }
+
+
 
     private val extensionRowMapper = RowMapper { rs, _: Int ->
         Extension(

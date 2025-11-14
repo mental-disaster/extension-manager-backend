@@ -6,12 +6,7 @@ import com.flow.blockext.model.dto.toDto
 import com.flow.blockext.service.ExtensionService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.ResponseStatus
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/extensions")
@@ -28,4 +23,10 @@ class ExtensionController(
     fun create(
         @Valid @RequestBody request: ExtensionCreateRequestDto,
     ): ExtensionResponseDto = extensionService.create(request).toDto()
+
+    @DeleteMapping("/{name}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun delete(@PathVariable("name") name: String) {
+        extensionService.deleteCustomByName(name)
+    }
 }
