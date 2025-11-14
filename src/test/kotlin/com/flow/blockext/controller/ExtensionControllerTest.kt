@@ -2,6 +2,7 @@ package com.flow.blockext.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.flow.blockext.exception.ExtensionDuplicateException
+import com.flow.blockext.exception.ExtensionLimitExceededException
 import com.flow.blockext.exception.ExtensionQueryException
 import com.flow.blockext.exception.GlobalExceptionHandler
 import com.flow.blockext.model.dto.ExtensionCreateRequestDto
@@ -156,5 +157,21 @@ class ExtensionControllerTest {
             .andExpect(status().isConflict)
             .andExpect(jsonPath("$.code", equalTo("EXTENSION_DUPLICATE")))
             .andExpect(jsonPath("$.message", equalTo("이미 존재")))
+    }
+
+    @Test
+    fun `POST exceed limit returns 409`() {
+        val request = ExtensionCreateRequestDto(name = "exe")
+        Mockito.doThrow(ExtensionLimitExceededException("한계 초과"))
+            .`when`(extensionService).create(request)
+
+        mockMvc.perform(
+            post("/api/extensions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)),
+        )
+            .andExpect(status().isConflict)
+            .andExpect(jsonPath("$.code", equalTo("EXTENSION_LIMIT_EXCEEDED")))
+            .andExpect(jsonPath("$.message", equalTo("한계 초과")))
     }
 }

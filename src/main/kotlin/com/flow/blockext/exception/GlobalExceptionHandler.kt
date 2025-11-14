@@ -27,6 +27,17 @@ class GlobalExceptionHandler {
             .body(ErrorResponse(code = "EXTENSION_DUPLICATE", message = ex.message ?: "이미 등록된 확장자입니다."))
     }
 
+    @ExceptionHandler(ExtensionLimitExceededException::class)
+    fun handleExtensionLimitExceeded(ex: ExtensionLimitExceededException): ResponseEntity<ErrorResponse> {
+        log.warn("Extension limit exceeded", ex)
+        return ResponseEntity
+            .status(HttpStatus.CONFLICT)
+            .body(ErrorResponse(
+                code = "EXTENSION_LIMIT_EXCEEDED",
+                message = ex.message ?: "사용자 확장자는 최대 200개까지만 등록 가능합니다."
+            ))
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidation(ex: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
         log.warn("Validation failed on request parameter", ex)

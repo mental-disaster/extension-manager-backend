@@ -38,6 +38,13 @@ class ExtensionRepositoryTest {
     }
 
     @Test
+    fun `countByType return row count`() {
+        val result = repository.countByType(ExtensionType.CUSTOM)
+
+        assertThat(result).isEqualTo(1)
+    }
+
+    @Test
     fun `findAll reads data`() {
         val result = repository.findAll()
 

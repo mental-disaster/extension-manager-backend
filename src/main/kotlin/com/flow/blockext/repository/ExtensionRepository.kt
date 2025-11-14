@@ -14,6 +14,18 @@ class ExtensionRepository(
     private val jdbcTemplate: JdbcTemplate,
 ) {
 
+    fun countByType(type: ExtensionType): Long {
+        return runCatching {
+            jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM extension WHERE type = ?",
+                Long::class.java,
+                type,
+            )!!
+        }.getOrElse { throwable ->
+            throw ExtensionQueryException("확장자 타입 개수 조회 중 오류가 발생했습니다.", throwable)
+        }
+    }
+
     fun findAll(): List<Extension> {
         return runCatching {
             jdbcTemplate.query(
@@ -45,6 +57,9 @@ class ExtensionRepository(
 
         try {
             jdbcTemplate.update(insertSql, name, type.name, isBlocked)
+
+            return jdbcTemplate.queryForObject("SELECT last_insert_rowid()", Long::class.java)
+                ?: throw ExtensionQueryException("생성된 확장자 ID를 조회할 수 없습니다.")
         } catch (ex: DataAccessException) {
             val rootMsg = ex.rootCause?.message ?: ex.message ?: ""
 
@@ -54,9 +69,6 @@ class ExtensionRepository(
 
             throw ExtensionQueryException("확장자 생성 중 오류가 발생했습니다.", ex)
         }
-
-        return jdbcTemplate.queryForObject("SELECT last_insert_rowid()", Long::class.java)
-            ?: throw ExtensionQueryException("생성된 확장자 ID를 조회할 수 없습니다.")
     }
 
     private val extensionRowMapper = RowMapper { rs, _: Int ->

@@ -1,6 +1,7 @@
 package com.flow.blockext.service
 
 import com.flow.blockext.exception.ExtensionDuplicateException
+import com.flow.blockext.exception.ExtensionLimitExceededException
 import com.flow.blockext.exception.ExtensionQueryException
 import com.flow.blockext.model.dto.ExtensionCreateRequestDto
 import com.flow.blockext.model.entity.Extension
@@ -25,6 +26,33 @@ class ExtensionServiceTest {
     }
 
     @Test
+    fun `findAll return extension list`() {
+        val extensions = listOf(
+            Extension(
+                id = 1L,
+                name = "exe",
+                isBlocked = true,
+                type = ExtensionType.FIXED,
+                createdAt = "2024-01-01 00:00:00",
+                updatedAt = "2024-01-02 00:00:00",
+            ),
+            Extension(
+                id = 2L,
+                name = "bat",
+                isBlocked = false,
+                type = ExtensionType.CUSTOM,
+                createdAt = "2024-01-03 00:00:00",
+                updatedAt = "2024-01-04 00:00:00",
+            ),
+        )
+        given(repository.findAll()).willReturn(extensions)
+
+        val result = service.findAll()
+
+        assertThat(result).isEqualTo(extensions)
+    }
+
+    @Test
     fun `create returns entity`() {
         val request = ExtensionCreateRequestDto("exe")
         val created = Extension(1L, "exe", true, ExtensionType.FIXED, "", "")
@@ -43,6 +71,15 @@ class ExtensionServiceTest {
         assertThatThrownBy { service.create(request) }
             .isInstanceOf(IllegalArgumentException::class.java)
             .hasMessageContaining("name")
+    }
+
+    @Test
+    fun `create propagates limit exceeded exception`() {
+        val request = ExtensionCreateRequestDto("exe")
+        given(repository.countByType(ExtensionType.CUSTOM)).willReturn(200L)
+
+        assertThatThrownBy { service.create(request) }
+            .isInstanceOf(ExtensionLimitExceededException::class.java)
     }
 
     @Test
