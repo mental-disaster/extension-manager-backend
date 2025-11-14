@@ -32,6 +32,7 @@
 
 1. **사전 준비**
    - JDK 21 설치
+   - 루트 디렉토리에 /data 디렉토리 생성
  
 2. **의존성 다운로드 및 빌드**
    ```bash
@@ -47,3 +48,6 @@
    ```bash
    ./gradlew test
    ```
+
+5. **Swagger UI 확인**
+   - 앱 실행 후 `http://localhost:8080/swagger-ui/index.html` 접속
