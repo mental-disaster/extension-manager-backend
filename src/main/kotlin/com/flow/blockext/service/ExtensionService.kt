@@ -1,6 +1,6 @@
 package com.flow.blockext.service
 
-import com.flow.blockext.exception.ExtensionLimitExceededException
+import com.flow.blockext.exception.extension.ExtensionLimitExceededException
 import com.flow.blockext.model.dto.ExtensionCreateRequestDto
 import com.flow.blockext.model.entity.Extension
 import com.flow.blockext.model.enums.ExtensionType
@@ -29,6 +29,13 @@ class ExtensionService(
 
         val id = extensionRepository.insert(name, ExtensionType.CUSTOM, true)
         return extensionRepository.findById(id)
+    }
+
+    @Transactional
+    fun updateBlockStatus(name: String, isBlocked: Boolean): Extension {
+        extensionRepository.updateIsBlockedByNameAndType(name, ExtensionType.FIXED, isBlocked)
+
+        return extensionRepository.findByName(name)
     }
 
     fun deleteCustomByName(name: String) {
