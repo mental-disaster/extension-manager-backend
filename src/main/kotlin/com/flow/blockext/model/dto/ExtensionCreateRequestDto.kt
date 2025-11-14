@@ -1,10 +1,12 @@
 package com.flow.blockext.model.dto
 
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
 
 data class ExtensionCreateRequestDto(
-    @field:NotBlank
-    @field:Size(max = 20)
+    @field:NotBlank(message = "확장자명 비워둘 수 없습니다.")
+    @field:Size(max = 20, message = "확장자명은 20자 이하로 입력 가능합니다.")
+    @field:Pattern(regexp = "[a-z0-9]+", message = "확장자명은 알파벳 소문자와 숫자만 입력 가능합니다.")
     val name: String,
 )

@@ -81,9 +81,7 @@ class ExtensionControllerTest {
 
     @Test
     fun `POST creates extension`() {
-        val request = ExtensionCreateRequestDto(
-            name = "zip",
-        )
+        val request = ExtensionCreateRequestDto(name = "zip")
         val created = Extension(
             id = 10L,
             name = request.name,
@@ -101,16 +99,13 @@ class ExtensionControllerTest {
         )
             .andExpect(status().isCreated)
             .andExpect(jsonPath("$.name", equalTo(request.name)))
-            .andExpect(jsonPath("$.type", equalTo(ExtensionType.CUSTOM)))
+            .andExpect(jsonPath("$.type", equalTo("CUSTOM")))
             .andExpect(jsonPath("$.isBlocked", equalTo(true)))
     }
 
     @Test
-    fun `POST name is null returns 400`() {
-        val payload = mapOf(
-            "type" to "CUSTOM",
-            "isBlocked" to true,
-        )
+    fun `POST name missing returns 400`() {
+        val payload = mapOf("name" to "")
 
         mockMvc.perform(
             post("/api/extensions")
@@ -123,9 +118,20 @@ class ExtensionControllerTest {
 
     @Test
     fun `POST name exceeds length returns 400`() {
-        val payload = mapOf(
-            "name" to "a".repeat(21),
+        val payload = mapOf("name" to "a".repeat(21))
+
+        mockMvc.perform(
+            post("/api/extensions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(payload)),
         )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.code", equalTo("INVALID_REQUEST")))
+    }
+
+    @Test
+    fun `POST name does not match pattern returns 400`() {
+        val payload = mapOf("name" to ".A#")
 
         mockMvc.perform(
             post("/api/extensions")
@@ -138,10 +144,8 @@ class ExtensionControllerTest {
 
     @Test
     fun `POST duplicate name returns 409`() {
-        val request = ExtensionCreateRequestDto(
-            name = "exe",
-        )
-        Mockito.doThrow(ExtensionDuplicateException("Already exists"))
+        val request = ExtensionCreateRequestDto(name = "exe")
+        Mockito.doThrow(ExtensionDuplicateException("이미 존재"))
             .`when`(extensionService).create(request)
 
         mockMvc.perform(
@@ -151,6 +155,6 @@ class ExtensionControllerTest {
         )
             .andExpect(status().isConflict)
             .andExpect(jsonPath("$.code", equalTo("EXTENSION_DUPLICATE")))
-            .andExpect(jsonPath("$.message", equalTo("Already exists")))
+            .andExpect(jsonPath("$.message", equalTo("이미 존재")))
     }
 }

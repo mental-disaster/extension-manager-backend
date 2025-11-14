@@ -5,7 +5,6 @@ import com.flow.blockext.exception.ExtensionQueryException
 import com.flow.blockext.model.entity.Extension
 import com.flow.blockext.model.enums.ExtensionType
 import org.springframework.dao.DataAccessException
-import org.springframework.dao.DuplicateKeyException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.stereotype.Repository
@@ -46,9 +45,13 @@ class ExtensionRepository(
 
         try {
             jdbcTemplate.update(insertSql, name, type.name, isBlocked)
-        } catch (ex: DuplicateKeyException) {
-            throw ExtensionDuplicateException("이미 등록된 확장자입니다.", ex)
         } catch (ex: DataAccessException) {
+            val rootMsg = ex.rootCause?.message ?: ex.message ?: ""
+
+            if (rootMsg.contains("UNIQUE constraint failed", ignoreCase = true)) {
+                throw ExtensionDuplicateException("이미 등록된 확장자입니다.", ex)
+            }
+
             throw ExtensionQueryException("확장자 생성 중 오류가 발생했습니다.", ex)
         }
 

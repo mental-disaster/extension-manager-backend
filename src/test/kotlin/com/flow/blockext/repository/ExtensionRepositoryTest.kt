@@ -91,7 +91,7 @@ class ExtensionRepositoryTest {
 
     @Test
     fun `insert throws duplicate exception`() {
-        assertThatThrownBy { repository.insert("exe", ExtensionType.CUSTOM, true) }
+        assertThatThrownBy { repository.insert("exe", ExtensionType.FIXED, true) }
             .isInstanceOf(ExtensionDuplicateException::class.java)
     }
 
@@ -101,7 +101,7 @@ class ExtensionRepositoryTest {
             """
             CREATE TABLE IF NOT EXISTS extension (
                 id              INTEGER PRIMARY KEY AUTOINCREMENT,
-                name            VARCHAR(20) NOT NULL UNIQUE,
+                name            VARCHAR(20) NOT NULL UNIQUE CHECK(length(name) <= 20),
                 type            TEXT NOT NULL CHECK(type IN ('FIXED', 'CUSTOM')) DEFAULT 'CUSTOM',
                 is_blocked      BOOLEAN NOT NULL DEFAULT TRUE,
                 created_at      TEXT NOT NULL DEFAULT (datetime('now')),

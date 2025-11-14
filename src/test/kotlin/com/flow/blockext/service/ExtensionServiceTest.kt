@@ -28,7 +28,7 @@ class ExtensionServiceTest {
     fun `create returns entity`() {
         val request = ExtensionCreateRequestDto("exe")
         val created = Extension(1L, "exe", true, ExtensionType.FIXED, "", "")
-        given(repository.insert("exe", ExtensionType.FIXED, true)).willReturn(1L)
+        given(repository.insert("exe", ExtensionType.CUSTOM, true)).willReturn(1L)
         given(repository.findById(1L)).willReturn(created)
 
         val result = service.create(request)
@@ -48,7 +48,7 @@ class ExtensionServiceTest {
     @Test
     fun `create propagates duplicate exception`() {
         val request = ExtensionCreateRequestDto("exe")
-        given(repository.insert("exe", ExtensionType.FIXED, true)).willThrow(ExtensionDuplicateException("dup"))
+        given(repository.insert("exe", ExtensionType.CUSTOM, true)).willThrow(ExtensionDuplicateException("dup"))
 
         assertThatThrownBy { service.create(request) }
             .isInstanceOf(ExtensionDuplicateException::class.java)
@@ -57,7 +57,7 @@ class ExtensionServiceTest {
     @Test
     fun `create propagates query exception from findById`() {
         val request = ExtensionCreateRequestDto("exe")
-        given(repository.insert("exe", ExtensionType.FIXED, true)).willReturn(5L)
+        given(repository.insert("exe", ExtensionType.CUSTOM, true)).willReturn(5L)
         given(repository.findById(5L)).willThrow(ExtensionQueryException("조회 실패"))
 
         assertThatThrownBy { service.create(request) }
