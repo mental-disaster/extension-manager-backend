@@ -102,6 +102,8 @@ class ExtensionRepositoryTest {
             .isInstanceOf(ExtensionDuplicateException::class.java)
     }
 
+
+
     private fun resetSchema() {
         jdbcTemplate.execute("DROP TABLE IF EXISTS extension")
         jdbcTemplate.execute(

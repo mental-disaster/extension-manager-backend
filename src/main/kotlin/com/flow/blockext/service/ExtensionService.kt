@@ -30,4 +30,8 @@ class ExtensionService(
         val id = extensionRepository.insert(name, ExtensionType.CUSTOM, true)
         return extensionRepository.findById(id)
     }
+
+    fun deleteCustomByName(name: String) {
+        extensionRepository.deleteByNameAndType(name, ExtensionType.CUSTOM)
+    }
 }
