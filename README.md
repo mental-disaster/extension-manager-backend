@@ -48,3 +48,6 @@
    ```bash
    ./gradlew test
    ```
+
+5. **Swagger UI 확인**
+   - 앱 실행 후 `http://localhost:8080/swagger-ui/index.html` 접속
