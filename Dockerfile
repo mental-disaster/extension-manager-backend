@@ -12,13 +12,13 @@ WORKDIR /app
 
 RUN addgroup --system spring \
     && adduser --system --ingroup spring spring \
-    && mkdir -p /app/data
+    && mkdir -p /app/data \
+    && chown -R spring:spring /app
 
 ENV SPRING_DATASOURCE_URL=jdbc:sqlite:/app/data/app.db
 
 COPY --from=builder --chown=spring:spring /workspace/app.jar /app/app.jar
 
-VOLUME ["/app/data"]
 EXPOSE 8080
 
 USER spring
