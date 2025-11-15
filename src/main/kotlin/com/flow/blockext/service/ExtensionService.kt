@@ -17,6 +17,7 @@ class ExtensionService(
     fun findAll(): List<Extension> = extensionRepository.findAll()
 
     @Transactional
+    @Synchronized
     fun create(request: ExtensionCreateRequestDto): Extension {
         val name = request.name.trim().lowercase(Locale.getDefault()).takeIf { it.isNotEmpty() }
             ?: throw IllegalArgumentException("name 은 필수입니다.")
